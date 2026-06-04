@@ -1,0 +1,16 @@
+einops
+matplotlib
+numpy
+pandas
+patool
+reformer-pytorch
+scikit-learn
+scipy
+sktime
+sympy
+tqdm
+torch
+transformers
+accelerate
+sentencepiece
+protobuf
