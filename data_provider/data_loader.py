@@ -8,8 +8,12 @@ from data_provider.m4 import M4Dataset, M4Meta
 from sklearn.preprocessing import StandardScaler
 from utils.tools import convert_tsf_to_dataframe
 import warnings
+from data_provider.stock import get_stock_data, get_all_stocks
+from settings.utils import get_trade_date, get_std_trade_date
+from setting import dataset_path
 
 warnings.filterwarnings('ignore')
+
 
 class Dataset_Stock(Dataset):
     def __init__(self, root_path, flag='train', size=None, data_path=None,
@@ -35,17 +39,15 @@ class Dataset_Stock(Dataset):
 
     def __read_data__(self):
         self.scaler = StandardScaler()
-        df_raw = pd.read_csv(os.path.join(self.root_path,
-                                          self.data_path))
-        num_train = int(len(df_raw) * 0.7)
-        num_test = int(len(df_raw) * 0.2)
+        df_raw = get_stock_data(self.root_path, self.data_path)
+        num_train = int(len(df_raw/self.token_len) * 0.7) * self.token_len
+        num_test = int(len(df_raw/self.token_len) * 0.2) * self.token_len
         num_vali = len(df_raw) - num_train - num_test
         border1s = [0, num_train - self.seq_len, len(df_raw) - num_test - self.seq_len]
         border2s = [num_train, num_train + num_vali, len(df_raw)]
         border1 = border1s[self.set_type]
         border2 = border2s[self.set_type]
             
-
         cols_data = df_raw.columns[1:]
         df_data = df_raw[cols_data]
 
@@ -56,12 +58,21 @@ class Dataset_Stock(Dataset):
         else:
             data = df_data.values
         data_name = self.data_path.split('.')[0]
-        self.data_stamp = torch.load(os.path.join(self.root_path, f'{data_name}.pt'))
+        std_trade_date = get_std_trade_date()
+        # 获取df_raw中的第一个日期在std_trade_date对应date列中索引值作为起始索引，最后一个日期对应date列中索引值作为结束索引
+        start_date = df_raw['date'].iloc[0]
+        end_date = df_raw['date'].iloc[-1]
+        start_index = std_trade_date[std_trade_date['date'] == start_date].index[0]
+        end_index = std_trade_date[std_trade_date['date'] == end_date].index[0]
+        data_stamp = torch.load(os.path.join(dataset_path, f'{data_name}.pt'))
+        # 从data_stamp中取出起始索引到结束索引的数据作为data_stamp
+        self.data_stamp = data_stamp[start_index:end_index+1]
+        # 重置self.data_stamp的索引，使其从0开始
+        self.data_stamp.index = range(len(self.data_stamp))
         self.data_stamp = self.data_stamp[border1:border2]
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]
         
-
     def __getitem__(self, index):
         feat_id = index // self.tot_len
         s_begin = index % self.tot_len
@@ -80,7 +91,6 @@ class Dataset_Stock(Dataset):
 
     def inverse_transform(self, data):
         return self.scaler.inverse_transform(data)
-
 
 
 class Dataset_ETT_hour(Dataset):
@@ -503,6 +513,8 @@ class Dataset_Preprocess(Dataset):
 
     def __read_data__(self):
         df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
+        # 去除前10行
+        df_raw = df_raw.iloc[10*self.token_len:, :]
         df_stamp = df_raw[['date']]
         df_stamp['date'] = pd.to_datetime(df_stamp.date).apply(str)
         self.data_stamp = df_stamp['date'].values
@@ -513,12 +525,18 @@ class Dataset_Preprocess(Dataset):
         s_begin = index % self.tot_len
         s_end = s_begin + self.token_len
         start = datetime.datetime.strptime(self.data_stamp[s_begin], "%Y-%m-%d %H:%M:%S")
+
         if self.data_set_type in ['traffic', 'electricity', 'ETTh1', 'ETTh2']:
             end = (start + datetime.timedelta(hours=self.token_len-1)).strftime("%Y-%m-%d %H:%M:%S")
         elif self.data_set_type == 'weather':
             end = (start + datetime.timedelta(minutes=10*(self.token_len-1))).strftime("%Y-%m-%d %H:%M:%S")
         elif self.data_set_type in ['ETTm1', 'ETTm2']:
             end = (start + datetime.timedelta(minutes=15*(self.token_len-1))).strftime("%Y-%m-%d %H:%M:%S")
+        elif self.data_set_type == "stock":
+            # 一天交易4个小时
+            days = self.token_len * 15 // 60 // 4
+            # 获取start_date对应的前n天的交易日期
+            end = get_trade_date(start, days)
         seq_x_mark = f"This is Time Series from {self.data_stamp[s_begin]} to {end}"
         return seq_x_mark
 

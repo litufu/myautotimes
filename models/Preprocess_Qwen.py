@@ -1,13 +1,13 @@
 import torch
 import torch.nn as nn
 from transformers import AutoModelForCausalLM, AutoTokenizer
+from setting import get_qwen31,big
 
 class Model(nn.Module):
     def __init__(self, configs):
         super(Model, self).__init__()
         self.device = configs.gpu
         print(self.device)
-        model_name = "Qwen/Qwen3-1.7B-Base"
 
         self.qwen = AutoModelForCausalLM.from_pretrained(
             configs.llm_ckp_dir,
@@ -17,7 +17,7 @@ class Model(nn.Module):
         self.qwen_tokenizer = AutoTokenizer.from_pretrained(configs.llm_ckp_dir)
         self.qwen_tokenizer.pad_token = self.qwen_tokenizer.eos_token
         self.vocab_size = self.qwen_tokenizer.vocab_size
-        self.hidden_dim_of_qwen = 2048
+        self.hidden_dim_of_qwen = getattr(self.qwen.config, 'hidden_size', 2048)
         
         for name, param in self.qwen.named_parameters():
             param.requires_grad = False

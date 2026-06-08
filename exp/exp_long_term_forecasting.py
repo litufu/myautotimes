@@ -20,6 +20,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         super(Exp_Long_Term_Forecast, self).__init__(args)
         
     def _build_model(self):
+
         model = self.model_dict[self.args.model].Model(self.args)
         if self.args.use_multi_gpu:
             self.device = torch.device('cuda:{}'.format(self.args.local_rank))
@@ -101,14 +102,21 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         return total_loss
 
     def train(self, setting):
+        path = os.path.join(self.args.checkpoints, setting)
+        if (self.args.use_multi_gpu and self.args.local_rank == 0) or not self.args.use_multi_gpu:
+            if os.path.exists(path):
+                best_model_path = path + '/' + 'checkpoint.pth'
+                if self.args.use_multi_gpu:
+                    dist.barrier()
+                    self.model.load_state_dict(torch.load(best_model_path), strict=False)
+                else:
+                    self.model.load_state_dict(torch.load(best_model_path), strict=False)
+            else:
+                os.makedirs(path)
+
         train_data, train_loader = self._get_data(flag='train')
         vali_data, vali_loader = self._get_data(flag='val')
         test_data, test_loader = self._get_data(flag='test')
-
-        path = os.path.join(self.args.checkpoints, setting)
-        if (self.args.use_multi_gpu and self.args.local_rank == 0) or not self.args.use_multi_gpu:
-            if not os.path.exists(path):
-                os.makedirs(path)
 
         time_now = time.time()
 

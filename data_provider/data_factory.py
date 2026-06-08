@@ -1,9 +1,10 @@
-from data_provider.data_loader import Dataset_ETT_hour, Dataset_Custom, Dataset_M4, Dataset_Solar, Dataset_TSF, Dataset_TSF_ICL
+from data_provider.data_loader import Dataset_ETT_hour,Dataset_Stock, Dataset_Custom, Dataset_M4, Dataset_Solar, Dataset_TSF, Dataset_TSF_ICL
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 
 data_dict = {
     'ETTh1': Dataset_ETT_hour,
+    "stock":Dataset_Stock,
     'custom': Dataset_Custom,
     'm4': Dataset_M4,
     'Solar': Dataset_Solar,

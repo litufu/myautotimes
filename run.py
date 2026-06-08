@@ -8,9 +8,10 @@ from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
 from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from exp.exp_zero_shot_forecasting import Exp_Zero_Shot_Forecast
 from exp.exp_in_context_forecasting import Exp_In_Context_Forecast
-from setting import qwen35, qwen31
+from setting import big, get_qwen31
 
 if __name__ == '__main__':
+    qwen31 = get_qwen31(big=big)
     fix_seed = 2021
     random.seed(fix_seed)
     torch.manual_seed(fix_seed)
@@ -23,11 +24,11 @@ if __name__ == '__main__':
                         help='task name, options:[long_term_forecast, short_term_forecast, zero_shot_forecasting, in_context_forecasting]')
     parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
     parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
-    parser.add_argument('--model', type=str, required=True, default='AutoTimes_MiniCPM5',
-                        help='model name, options: [AutoTimes_MiniCPM5, AutoTimes_Llama, AutoTimes_Gpt2, AutoTimes_Opt1b]')
+    parser.add_argument('--model', type=str, required=True, default='AutoTimes_Qwen',
+                        help='model name, options: [AutoTimes_MiniCPM5, AutoTimes_Llama, AutoTimes_Gpt2, AutoTimes_Opt1b, AutoTimes_Qwen]')
 
     # data loader
-    parser.add_argument('--data', type=str, required=True, default='ETTm1', help='dataset type')
+    parser.add_argument('--data', type=str, required=True, default='stock', help='dataset type')
     parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
     parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
     parser.add_argument('--test_data_path', type=str, default='ETTh1.csv', help='test data file used in zero shot forecasting')
@@ -37,12 +38,12 @@ if __name__ == '__main__':
     parser.add_argument('--drop_short', action='store_true', default=False, help='drop too short sequences in dataset')
 
     # forecasting task
-    parser.add_argument('--seq_len', type=int, default=672, help='input sequence length')
-    parser.add_argument('--label_len', type=int, default=576, help='label length')
-    parser.add_argument('--token_len', type=int, default=96, help='token length')
-    parser.add_argument('--test_seq_len', type=int, default=672, help='test seq len')
-    parser.add_argument('--test_label_len', type=int, default=576, help='test label len')
-    parser.add_argument('--test_pred_len', type=int, default=96, help='test pred len')
+    parser.add_argument('--seq_len', type=int, default=800, help='input sequence length')
+    parser.add_argument('--label_len', type=int, default=720, help='label length')
+    parser.add_argument('--token_len', type=int, default=80, help='token length')
+    parser.add_argument('--test_seq_len', type=int, default=800, help='test seq len')
+    parser.add_argument('--test_label_len', type=int, default=720, help='test label len')
+    parser.add_argument('--test_pred_len', type=int, default=80, help='test pred len')
     parser.add_argument('--seasonal_patterns', type=str, default='Monthly', help='subset for M4')
 
     # model define
