@@ -1,16 +1,22 @@
-# 这是一个示例 Python 脚本。
-
-# 按 Shift+F10 执行或将其替换为您的代码。
-# 按 双击 Shift 在所有地方搜索类、文件、工具窗口、操作和设置。
-
-
-def print_hi(name):
-    # 在下面的代码行中使用断点来调试脚本。
-    print(f'Hi, {name}')  # 按 Ctrl+F8 切换断点。
+import os
+import tushare as ts
+import torch
 
 
-# 按装订区域中的绿色按钮以运行脚本。
-if __name__ == '__main__':
-    print_hi('PyCharm')
 
-# 访问 https://www.jetbrains.com/help/pycharm/ 获取 PyCharm 帮助
+# ts.set_token('f88e93f91c79cdb865f22f40cac23a2907da36b53fa9aa150228ed27')
+# pro = ts.pro_api()
+# df = pro.query('trade_cal', start_date='20261231', end_date='20271231')
+# print(df)
+
+data_stamp = torch.load(r"D:\autotimes\dataset\stock.pt")
+print(data_stamp)
+print(data_stamp.shape)
+# reversed_list = data_stamp[::-1]
+data_stamp = reversed(data_stamp)
+
+torch.save(data_stamp, r"D:\autotimes\dataset\stock_reversed.pt")
+print(data_stamp)
+
+
+     

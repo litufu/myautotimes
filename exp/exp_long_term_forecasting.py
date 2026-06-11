@@ -106,11 +106,12 @@ class Exp_Long_Term_Forecast(Exp_Basic):
         if (self.args.use_multi_gpu and self.args.local_rank == 0) or not self.args.use_multi_gpu:
             if os.path.exists(path):
                 best_model_path = path + '/' + 'checkpoint.pth'
-                if self.args.use_multi_gpu:
-                    dist.barrier()
-                    self.model.load_state_dict(torch.load(best_model_path), strict=False)
-                else:
-                    self.model.load_state_dict(torch.load(best_model_path), strict=False)
+                if os.path.exists(best_model_path):
+                    if self.args.use_multi_gpu:
+                        dist.barrier()
+                        self.model.load_state_dict(torch.load(best_model_path), strict=False)
+                    else:
+                        self.model.load_state_dict(torch.load(best_model_path), strict=False)
             else:
                 os.makedirs(path)
 
@@ -130,6 +131,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             scaler = torch.amp.GradScaler('cuda')
 
         for epoch in range(self.args.train_epochs):
+            print("Epoch: {} / {}".format(epoch + 1, self.args.train_epochs))
             iter_count = 0
 
             loss_val = torch.tensor(0., device="cuda")
@@ -138,6 +140,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
             self.model.train()
             epoch_time = time.time()
             for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(train_loader):
+                print(i,len(train_loader))
                 iter_count += 1
                 model_optim.zero_grad()
                 batch_x = batch_x.float().to(self.device)
@@ -163,6 +166,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                         speed = (time.time() - time_now) / iter_count
                         left_time = speed * ((self.args.train_epochs - epoch) * train_steps - i)
                         print('\tspeed: {:.4f}s/iter; left time: {:.4f}s'.format(speed, left_time))
+                        early_stopping.save_checkpoint(None,self.model, path)
                         iter_count = 0
                         time_now = time.time()
 
@@ -250,7 +254,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                         batch_x_mark = torch.cat([batch_x_mark[:, 1:, :], tmp], dim=1)
                         
                     if self.args.use_amp:
-                        with torch.cuda.amp.autocast():
+                        with torch.amp.autocast("cuda"):
                             outputs = self.model(batch_x, batch_x_mark, None, batch_y_mark)
                     else:
                         outputs = self.model(batch_x, batch_x_mark, None, batch_y_mark)

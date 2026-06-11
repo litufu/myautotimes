@@ -31,6 +31,8 @@ def handle_single_df(df):
     df_copy['low'] = df_copy['low'].fillna(df_copy['close'])
     df_copy['volume'] = df_copy['volume'].fillna(0)
     df_copy['amount'] = df_copy['amount'].fillna(0)
+    # 将df_copy中的索引重置为默认的整数索引，并将date列移动到第一列
+    df_copy = df_copy.reset_index()
 
     return df_copy
 

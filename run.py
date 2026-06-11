@@ -20,18 +20,18 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='AutoTimes')
 
     # basic config
-    parser.add_argument('--task_name', type=str, required=True, default='long_term_forecast',
+    parser.add_argument('--task_name', type=str,  default='long_term_forecast',
                         help='task name, options:[long_term_forecast, short_term_forecast, zero_shot_forecasting, in_context_forecasting]')
-    parser.add_argument('--is_training', type=int, required=True, default=1, help='status')
-    parser.add_argument('--model_id', type=str, required=True, default='test', help='model id')
-    parser.add_argument('--model', type=str, required=True, default='AutoTimes_Qwen',
+    parser.add_argument('--is_training', type=int,  default=1, help='status')
+    parser.add_argument('--model_id', type=str,  default='test', help='model id')
+    parser.add_argument('--model', type=str, default='AutoTimes_Qwen',
                         help='model name, options: [AutoTimes_MiniCPM5, AutoTimes_Llama, AutoTimes_Gpt2, AutoTimes_Opt1b, AutoTimes_Qwen]')
 
     # data loader
-    parser.add_argument('--data', type=str, required=True, default='stock', help='dataset type')
-    parser.add_argument('--root_path', type=str, default='./data/ETT/', help='root path of the data file')
-    parser.add_argument('--data_path', type=str, default='ETTh1.csv', help='data file')
-    parser.add_argument('--test_data_path', type=str, default='ETTh1.csv', help='test data file used in zero shot forecasting')
+    parser.add_argument('--data', type=str, default='Stock', help='dataset type')
+    parser.add_argument('--root_path', type=str, default='D:/BaiduNetdiskDownload/stock/minute15', help='root path of the data file')
+    parser.add_argument('--data_path', type=str, default='SH.600033', help='data file')
+    parser.add_argument('--test_data_path', type=str, default='SH.600033', help='test data file used in zero shot forecasting')
     parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
     parser.add_argument('--drop_last',  action='store_true', default=False, help='drop last batch in data loader')
     parser.add_argument('--val_set_shuffle', action='store_false', default=True, help='shuffle validation set')
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('--num_workers', type=int, default=10, help='data loader num workers')
     parser.add_argument('--itr', type=int, default=1, help='experiments times')
     parser.add_argument('--train_epochs', type=int, default=10, help='train epochs')
-    parser.add_argument('--batch_size', type=int, default=32, help='batch size of train input data')
+    parser.add_argument('--batch_size', type=int, default=256, help='batch size of train input data')
     parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
     parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
     parser.add_argument('--des', type=str, default='test', help='exp description')

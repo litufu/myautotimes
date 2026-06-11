@@ -5,7 +5,7 @@ python -u run.py \
   --task_name long_term_forecast \
   --is_training 1 \
   --root_path D:/BaiduNetdiskDownload/stock/minute15 \
-  --data_path 2024 \
+  --data_path SH.600033 \
   --model_id stock_800_80 \
   --model $model_name \
   --data Stock \
@@ -33,7 +33,7 @@ python -u run.py \
   --task_name long_term_forecast \
   --is_training 0 \
   --root_path D:/BaiduNetdiskDownload/stock/minute15 \
-  --data_path 2024 \
+  --data_path SH.600033 \
   --model_id stock_800_80 \
   --model $model_name \
   --data Stock \

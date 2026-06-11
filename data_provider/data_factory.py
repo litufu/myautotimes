@@ -4,7 +4,7 @@ from torch.utils.data.distributed import DistributedSampler
 
 data_dict = {
     'ETTh1': Dataset_ETT_hour,
-    "stock":Dataset_Stock,
+    "Stock":Dataset_Stock,
     'custom': Dataset_Custom,
     'm4': Dataset_M4,
     'Solar': Dataset_Solar,
