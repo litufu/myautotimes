@@ -23,7 +23,7 @@ if __name__ == '__main__':
     parser.add_argument('--task_name', type=str,  default='long_term_forecast',
                         help='task name, options:[long_term_forecast, short_term_forecast, zero_shot_forecasting, in_context_forecasting]')
     parser.add_argument('--is_training', type=int,  default=1, help='status')
-    parser.add_argument('--model_id', type=str,  default='test', help='model id')
+    parser.add_argument('--model_id', type=str,  default='stock_800_80', help='model id')
     parser.add_argument('--model', type=str, default='AutoTimes_Qwen',
                         help='model name, options: [AutoTimes_MiniCPM5, AutoTimes_Llama, AutoTimes_Gpt2, AutoTimes_Opt1b, AutoTimes_Qwen]')
 
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     parser.add_argument('--data_path', type=str, default='SH.600033', help='data file')
     parser.add_argument('--test_data_path', type=str, default='SH.600033', help='test data file used in zero shot forecasting')
     parser.add_argument('--checkpoints', type=str, default='./checkpoints/', help='location of model checkpoints')
-    parser.add_argument('--drop_last',  action='store_true', default=False, help='drop last batch in data loader')
+    parser.add_argument('--drop_last',  action='store_true', default=True, help='drop last batch in data loader')
     parser.add_argument('--val_set_shuffle', action='store_false', default=True, help='shuffle validation set')
     parser.add_argument('--drop_short', action='store_true', default=False, help='drop too short sequences in dataset')
 
@@ -59,15 +59,15 @@ if __name__ == '__main__':
     parser.add_argument('--train_epochs', type=int, default=10, help='train epochs')
     parser.add_argument('--batch_size', type=int, default=256, help='batch size of train input data')
     parser.add_argument('--patience', type=int, default=3, help='early stopping patience')
-    parser.add_argument('--learning_rate', type=float, default=0.0001, help='optimizer learning rate')
+    parser.add_argument('--learning_rate', type=float, default=0.0005, help='optimizer learning rate')
     parser.add_argument('--des', type=str, default='test', help='exp description')
     parser.add_argument('--loss', type=str, default='MSE', help='loss function')
     parser.add_argument('--lradj', type=str, default='type1', help='adjust learning rate')
     parser.add_argument('--use_amp', action='store_true', help='use automatic mixed precision training', default=False)
-    parser.add_argument('--cosine', action='store_true', help='use cosine annealing lr', default=False)
+    parser.add_argument('--cosine', action='store_true', help='use cosine annealing lr', default=True)
     parser.add_argument('--tmax', type=int, default=10, help='tmax in cosine anealing lr')
     parser.add_argument('--weight_decay', type=float, default=0)
-    parser.add_argument('--mix_embeds', action='store_true', help='mix embeds', default=False)
+    parser.add_argument('--mix_embeds', action='store_true', help='mix embeds', default=True)
     parser.add_argument('--test_dir', type=str, default='./test', help='test dir')
     parser.add_argument('--test_file_name', type=str, default='checkpoint.pth', help='test file')
     

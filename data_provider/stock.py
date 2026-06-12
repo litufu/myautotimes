@@ -77,11 +77,11 @@ def get_stock_data(root_path,stock_code):
 
 
 if __name__ == '__main__':
-    # folder = r'D:\BaiduNetdiskDownload\stock\minute15'
-    # get_all_stocks(folder)
-    stock_code = 'SH.600036'
-    root_path = r'D:\BaiduNetdiskDownload\stock\minute15'
-    df_stock = get_stock_data(root_path,stock_code)
-    print(df_stock)
+    folder = r'D:\BaiduNetdiskDownload\stock\minute15'
+    get_all_stocks(folder)
+    # stock_code = 'SH.600036'
+    # root_path = r'D:\BaiduNetdiskDownload\stock\minute15'
+    # df_stock = get_stock_data(root_path,stock_code)
+    # print(df_stock)
     # df_stock.to_csv(r'SH.600036_all.csv', index=False)
 

@@ -111,6 +111,7 @@ class Exp_Long_Term_Forecast(Exp_Basic):
                         dist.barrier()
                         self.model.load_state_dict(torch.load(best_model_path), strict=False)
                     else:
+                        print("loading model from {}".format(best_model_path))
                         self.model.load_state_dict(torch.load(best_model_path), strict=False)
             else:
                 os.makedirs(path)
