@@ -75,7 +75,7 @@ class Model(nn.Module):
             (stdev[:, 0, :].unsqueeze(1).repeat(1, token_num * self.token_len, 1))
         dec_out = dec_out + \
             (means[:, 0, :].unsqueeze(1).repeat(1, token_num * self.token_len, 1))
-        
+        print(dec_out)
         return dec_out
     
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec):

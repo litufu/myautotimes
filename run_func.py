@@ -4,12 +4,14 @@ import random
 import numpy as np
 import torch
 import torch.distributed as dist
+from torch.nn.parallel import DistributedDataParallel as DDP
 from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
 from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from exp.exp_zero_shot_forecasting import Exp_Zero_Shot_Forecast
 from exp.exp_in_context_forecasting import Exp_In_Context_Forecast
 from setting import big, get_qwen31
 from data_provider.stock import get_all_stocks
+from models import AutoTimes_Qwen
 
 
 class Args:
@@ -59,6 +61,22 @@ class Args:
         self.gpu = 0
         self.use_multi_gpu = False
         self.visualize = False
+
+
+def predict():
+    args = Args()
+    model = AutoTimes_Qwen(args)
+    if args.use_multi_gpu:
+        device = torch.device('cuda:{}'.format(args.local_rank))
+        model = DDP(model.cuda(), device_ids=[args.local_rank])
+    else:
+        device = args.gpu
+        model = model.to(device)
+
+    model.eval()
+    outputs = model(batch_x, batch_x_mark, None, None)
+
+
 
 
 

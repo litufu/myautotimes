@@ -512,7 +512,7 @@ class Dataset_Preprocess(Dataset):
         self.tot_len = len(self.data_stamp)
 
     def __read_data__(self):
-        df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path))
+        df_raw = pd.read_csv(os.path.join(self.root_path, self.data_path),parse_dates=["date"])
         # 按照date列升序排序
         df_raw = df_raw.sort_values(by='date')
         df_stamp = df_raw[['date']]
@@ -524,8 +524,9 @@ class Dataset_Preprocess(Dataset):
     def __getitem__(self, index):
         s_begin = index % self.tot_len
         s_end = s_begin + self.token_len
+        print(s_begin)
         start = datetime.datetime.strptime(self.data_stamp[s_begin], "%Y-%m-%d %H:%M:%S")
-
+        print(start)
         if self.data_set_type in ['traffic', 'electricity', 'ETTh1', 'ETTh2']:
             end = (start + datetime.timedelta(hours=self.token_len-1)).strftime("%Y-%m-%d %H:%M:%S")
         elif self.data_set_type == 'weather':
@@ -537,6 +538,7 @@ class Dataset_Preprocess(Dataset):
             days = self.token_len * 15 // 60 // 4
             # 获取start_date对应的前n天的交易日期
             end = get_trade_date(start, days)
+            print(end)
         seq_x_mark = f"This is Time Series from {self.data_stamp[s_begin]} to {end}"
         print(seq_x_mark)
         return seq_x_mark

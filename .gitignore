@@ -144,3 +144,4 @@ dmypy.json
 /m4_results/
 /models--gpt2/
 /models--facebook--opt-1.3b/
+*.csv
