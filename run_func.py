@@ -98,7 +98,11 @@ def predict(df_raw):
     model.eval()
     outputs = model(x, x_mark, None, None)
     result = outputs[:, -args.token_len:, :]
-    print(result)
+    result = result.squeeze(0)
+    df_res = pd.DataFrame(result.detach().cpu().numpy())
+    df_res.to_csv("predict.csv")
+    print(df_res)
+
 
 
 
