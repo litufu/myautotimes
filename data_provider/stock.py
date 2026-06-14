@@ -1,38 +1,13 @@
 import pandas as pd
 import os
-from settings.utils import get_std_trade_date
+from settings.utils import std_input_data,get_std_stock
 
 
 
 def handle_single_df(df):
-    
-    # 将df中的“日期”和“时间”两列合并成一个新的“datetime”列，并将其转换为datetime类型
-    df['date'] = pd.to_datetime(df['日期'] + ' ' + df['时间'])
-    # 将“日期”和“时间”两列删除
-    df.drop(['日期', '时间'], axis=1, inplace=True)
-    # 将“代码”和“复权状态”两列删除
-    df.drop(['代码', '复权状态'], axis=1, inplace=True)
-    # 将“开盘”列重命名为“open”，“收盘”列重命名为“close”，“最高”列重命名为“high”，“最低”列重命名为“low”，“成交量(股)”列重命名为“volume”,“成交金额(元)”列重命名为“amount”
-    df.rename(columns={'开盘': 'open', '收盘': 'close', '最高': 'high', '最低': 'low', '成交量(股)': 'volume', '成交金额(元)': 'amount'}, inplace=True)
-    # 复制一份df，并将复制的df命名为df_copy，保留df_copy中的“datetime”、“open”、“close”、“high”、“low”,“volume”,“amount”列
-    df_copy = df[['date', 'open', 'close', 'high', 'low', 'volume', 'amount']].copy()
-    # 获取标准的交易日期列表
-    std_trade_date = get_std_trade_date()
-    # 按照df_copy中的“date"列的第一个值作为起始日期，最后一个值作为结束日期，获取这段时间内的标准交易日期列表
-    std_trade_date = std_trade_date[(std_trade_date['date'] >= df_copy['date'].iloc[0]) & (std_trade_date['date'] <= df_copy['date'].iloc[-1])]
-    # 将df_copy中的“date”列与std_trade_date中的date标准进行对比，
-    df_copy = df_copy.set_index('date')
-    df_copy = df_copy.reindex(std_trade_date['date'])
-    # 对于df_copy缺失的行，按照其前一个交易日的close作为open、close、high、low的值，并将volume和amount设置为0，补齐df_copy中的缺失行
-    df_copy['close'] = df_copy['close'].ffill()
-    # 将df_copy中的缺失行的open、high、low的值设置为close的值
-    df_copy['open'] = df_copy['open'].fillna(df_copy['close'])
-    df_copy['high'] = df_copy['high'].fillna(df_copy['close'])
-    df_copy['low'] = df_copy['low'].fillna(df_copy['close'])
-    df_copy['volume'] = df_copy['volume'].fillna(0)
-    df_copy['amount'] = df_copy['amount'].fillna(0)
-    # 将df_copy中的索引重置为默认的整数索引，并将date列移动到第一列
-    df_copy = df_copy.reset_index()
+
+    df_copy = get_std_stock(df)
+    df_copy = std_input_data(df_copy)
 
     return df_copy
 

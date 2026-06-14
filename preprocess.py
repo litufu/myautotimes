@@ -55,7 +55,7 @@ if __name__ == '__main__':
 
     data_loader = DataLoader(
         data_set,
-        batch_size=128,
+        batch_size=256,
         shuffle=False,
     )
 

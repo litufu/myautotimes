@@ -2,6 +2,7 @@ import argparse
 import os
 import random
 import numpy as np
+import pandas as pd
 import torch
 import torch.distributed as dist
 from torch.nn.parallel import DistributedDataParallel as DDP
@@ -9,10 +10,10 @@ from exp.exp_long_term_forecasting import Exp_Long_Term_Forecast
 from exp.exp_short_term_forecasting import Exp_Short_Term_Forecast
 from exp.exp_zero_shot_forecasting import Exp_Zero_Shot_Forecast
 from exp.exp_in_context_forecasting import Exp_In_Context_Forecast
-from setting import big, get_qwen31
+from setting import big, get_qwen31,dataset_path
 from data_provider.stock import get_all_stocks
 from models import AutoTimes_Qwen
-
+from settings.utils import std_input_data,get_stamp,get_std_stock
 
 class Args:
 
@@ -51,30 +52,53 @@ class Args:
         self.des = 'test'
         self.loss = 'MSE'
         self.lradj = 'type1'
-        self.use_amp = True
+        self.use_amp = False
         self.cosine = True
         self.tmax = 10
         self.weight_decay = 0
         self.mix_embeds = True
         self.test_dir = './test'
         self.test_file_name = 'checkpoint.pth'
-        self.gpu = 0
+        self.gpu = 0 if big else "cpu"
         self.use_multi_gpu = False
         self.visualize = False
 
 
-def predict():
+
+
+
+
+def predict(df_raw):
+    # 输入数据标准化，将日期变成连续的日期
+    df_std_input = std_input_data(df_raw)
+    # 获取对应输入的时间戳数据
+    data_stamp = get_stamp(df_std_input)
+    cols_data = df_std_input.columns[1:]
+    df_data = df_std_input[cols_data]
+    data = df_data.values
+
+
+
     args = Args()
-    model = AutoTimes_Qwen(args)
+    model = AutoTimes_Qwen.Model(args)
     if args.use_multi_gpu:
         device = torch.device('cuda:{}'.format(args.local_rank))
         model = DDP(model.cuda(), device_ids=[args.local_rank])
     else:
         device = args.gpu
         model = model.to(device)
+    data = torch.from_numpy(data)
+    data = data.unsqueeze(0)
+    data_stamp = data_stamp[0:len(data_stamp):args.token_len]
+    data_stamp = data_stamp.unsqueeze(0)
+    # data_stamp = torch
+    x = data.float().to(device)
+    x_mark = data_stamp.float().to(device)
 
     model.eval()
-    outputs = model(batch_x, batch_x_mark, None, None)
+    outputs = model(x, x_mark, None, None)
+    result = outputs[:, -args.token_len:, :]
+    print(result)
 
 
 
@@ -169,11 +193,19 @@ def run(stock_code):
 
 
 if __name__ == '__main__':
-    folder = r'D:\BaiduNetdiskDownload\stock\minute15'
-    all_stocks = get_all_stocks(folder)
-    # 随机调整all_stocks的顺序
-    random.shuffle(all_stocks)
-    for stock_code in all_stocks:
-        run(stock_code)
+    file = r"D:\BaiduNetdiskDownload\stock\minute15\2022\SH.600000.csv"
+    df = pd.read_csv(file)
+    df = get_std_stock(df)
+    df = df.iloc[0:800]
+    predict(df)
+
+
+    # folder = r'D:\BaiduNetdiskDownload\stock\minute15'
+    # all_stocks = get_all_stocks(folder)
+    # # 随机调整all_stocks的顺序
+    # random.shuffle(all_stocks)
+    # for stock_code in all_stocks:
+    #
+    #     run(stock_code)
 
     

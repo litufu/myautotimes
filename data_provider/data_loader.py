@@ -9,7 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from utils.tools import convert_tsf_to_dataframe
 import warnings
 from data_provider.stock import get_stock_data, get_all_stocks
-from settings.utils import get_trade_date, get_std_trade_date
+from settings.utils import get_trade_date, get_std_trade_date,get_stamp
 from setting import dataset_path
 
 warnings.filterwarnings('ignore')
@@ -58,17 +58,7 @@ class Dataset_Stock(Dataset):
         else:
             data = df_data.values
         data_name = self.data_path.split('.')[1]
-        std_trade_date = get_std_trade_date()
-        # 获取df_raw中的第一个日期在std_trade_date对应date列中索引值作为起始索引，最后一个日期对应date列中索引值作为结束索引
-        start_date = df_raw['date'].iloc[0]
-        end_date = df_raw['date'].iloc[-1]
-        start_index = std_trade_date[std_trade_date['date'] == start_date].index[0]
-        end_index = std_trade_date[std_trade_date['date'] == end_date].index[0]
-        data_stamp = torch.load(os.path.join(dataset_path, 'stock.pt'))
-        # 从data_stamp中取出起始索引到结束索引的数据作为data_stamp
-        self.data_stamp = data_stamp[start_index:end_index+1]
-        # 重置self.data_stamp的索引，使其从0开始
-        self.data_stamp.index = range(len(self.data_stamp))
+        self.data_stamp = get_stamp(df_raw)
         self.data_stamp = self.data_stamp[border1:border2]
         self.data_x = data[border1:border2]
         self.data_y = data[border1:border2]

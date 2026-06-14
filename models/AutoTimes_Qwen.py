@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from transformers import AutoModelForCausalLM
 from layers.mlp import MLP
+from setting import big
 
 class Model(nn.Module):
     def __init__(self, configs):
@@ -10,7 +11,10 @@ class Model(nn.Module):
         if configs.use_multi_gpu:
             self.device = f"cuda:{configs.local_rank}"
         else:
-            self.device = f"cuda:{configs.gpu}"
+            if big:
+                self.device = f"cuda:{configs.gpu}"
+            else:
+                self.device = configs.gpu
         print(self.device)
         
         self.qwen = AutoModelForCausalLM.from_pretrained(
@@ -62,7 +66,7 @@ class Model(nn.Module):
             times_embeds = times_embeds / times_embeds.norm(dim=2, keepdim=True)
             x_mark_enc = x_mark_enc / x_mark_enc.norm(dim=2, keepdim=True)
             times_embeds = times_embeds + self.add_scale * x_mark_enc
-        # outputs: [bs * n_vars x token_num x hidden_dim_of_qwen]
+
         outputs = self.qwen.model(
             inputs_embeds=times_embeds)[0]
         # dec_out: [bs * n_vars x token_num x token_len]
@@ -75,7 +79,6 @@ class Model(nn.Module):
             (stdev[:, 0, :].unsqueeze(1).repeat(1, token_num * self.token_len, 1))
         dec_out = dec_out + \
             (means[:, 0, :].unsqueeze(1).repeat(1, token_num * self.token_len, 1))
-        print(dec_out)
         return dec_out
     
     def forward(self, x_enc, x_mark_enc, x_dec, x_mark_dec):
