@@ -203,7 +203,6 @@ if __name__ == '__main__':
     df = pd.read_csv(file)
     df = get_std_stock(df)
     df = df.iloc[0:800]
-    df.to_csv("input.csv")
     predict(df)
 
 
