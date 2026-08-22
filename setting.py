@@ -1,7 +1,7 @@
 qwen35 = "./Qwen3-5___7B-Base"
 
 # 千问3是1的7B版本，千问3是0的6B版本。big=True表示使用千问3是1的7B版本，big=False表示使用千问3是0的6B版本。
-big = False
+big = True
 
 # 数据集,存储嵌入日期对应的pt
 dataset_path = "./dataset/"

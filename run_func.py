@@ -52,7 +52,7 @@ class Args:
         self.des = 'test'
         self.loss = 'MSE'
         self.lradj = 'type1'
-        self.use_amp = False
+        self.use_amp = True
         self.cosine = True
         self.tmax = 10
         self.weight_decay = 0
@@ -77,8 +77,6 @@ def predict(df_raw):
     df_data = df_std_input[cols_data]
     data = df_data.values
 
-
-
     args = Args()
     model = AutoTimes_Qwen.Model(args)
     if args.use_multi_gpu:
@@ -87,21 +85,25 @@ def predict(df_raw):
     else:
         device = args.gpu
         model = model.to(device)
+    best_model_path = "./checkpoints/best_model.pth"
+    model.load_state_dict(torch.load(best_model_path), strict=False)
+
     data = torch.from_numpy(data)
     data = data.unsqueeze(0)
     data_stamp = data_stamp[0:len(data_stamp):args.token_len]
     data_stamp = data_stamp.unsqueeze(0)
     # data_stamp = torch
-    x = data.float().to(device)
-    x_mark = data_stamp.float().to(device)
+    x = data.to(device, dtype=torch.float32)
+    x_mark = data_stamp.to(device, dtype=torch.float32)
 
     model.eval()
-    outputs = model(x, x_mark, None, None)
-    result = outputs[:, -args.token_len:, :]
-    result = result.squeeze(0)
-    df_res = pd.DataFrame(result.detach().cpu().numpy())
-    df_res.to_csv("predict.csv")
-    print(df_res)
+    with torch.amp.autocast('cuda'):
+        outputs = model(x, x_mark, None, None)
+        outputs = outputs[:, -args.token_len:, :]
+        result = outputs.squeeze(0)
+        df_res = pd.DataFrame(result.detach().cpu().numpy())
+        df_res.to_csv("predict.csv")
+        print(df_res)
 
 
 
@@ -201,6 +203,7 @@ if __name__ == '__main__':
     df = pd.read_csv(file)
     df = get_std_stock(df)
     df = df.iloc[0:800]
+    df.to_csv("input.csv")
     predict(df)
 
 
@@ -209,7 +212,7 @@ if __name__ == '__main__':
     # # 随机调整all_stocks的顺序
     # random.shuffle(all_stocks)
     # for stock_code in all_stocks:
-    #
+    #     print(stock_code)
     #     run(stock_code)
 
     

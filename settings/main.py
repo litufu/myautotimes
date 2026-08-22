@@ -1,6 +1,6 @@
 import tushare as ts
 import pandas as pd
-
+import pathlib
 
 
 # pro = ts.pro_api(token="f88e93f91c79cdb865f22f40cac23a2907da36b53fa9aa150228ed27")
@@ -8,9 +8,17 @@ import pandas as pd
 # df = pro.trade_cal(exchange='SSE')
 # df.to_csv('trade_cal.csv', index=False)
 
-
-df = pd.read_csv('trade_cal.csv')
+# 获取当前文件 (utils.py) 的绝对路径
+# __file__ 是当前脚本的路径
+# .resolve() 解析符号链接，确保路径真实
+# .parent 获取所在目录
+BASE_DIR = pathlib.Path(__file__).resolve().parent
+file_path = BASE_DIR / "trade_cal.csv"
+df = pd.read_csv(file_path)
 print(df)
+# 按照升序排列cal_date
+df = df.sort_values(by='cal_date')
+df.to_csv("trade_cal_reverse.csv")
 df_new = df[df['is_open'] == 1].copy()
 # 筛选is_open为1的行
 df_new = df_new[df_new['is_open'] == 1]
