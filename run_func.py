@@ -102,8 +102,7 @@ def predict(df_raw):
         outputs = outputs[:, -args.token_len:, :]
         result = outputs.squeeze(0)
         df_res = pd.DataFrame(result.detach().cpu().numpy())
-        df_res.to_csv("predict.csv")
-        print(df_res)
+        return df_res
 
 
 
