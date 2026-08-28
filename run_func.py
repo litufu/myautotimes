@@ -68,15 +68,41 @@ class Args:
 
 
 
-def predict(df_raw):
+def predict(df_raw,model,args,device,past_day):
     # 输入数据标准化，将日期变成连续的日期
     df_std_input = std_input_data(df_raw)
+    print(f"Standardized input shape: {df_std_input.shape}")
+    # 获取df_std_input后面past_day天的数据作为预测数据
+    df_std_input = df_std_input.iloc[-past_day:]
+    print(f"Predict input shape: {df_std_input.shape}")
     # 获取对应输入的时间戳数据
     data_stamp = get_stamp(df_std_input)
     cols_data = df_std_input.columns[1:]
     df_data = df_std_input[cols_data]
     data = df_data.values
 
+    data = torch.from_numpy(data)
+    data = data.unsqueeze(0)
+    data_stamp = data_stamp[0:len(data_stamp):args.token_len]
+    data_stamp = data_stamp.unsqueeze(0)
+    # data_stamp = torch
+    x = data.to(device, dtype=torch.float32)
+    x_mark = data_stamp.to(device, dtype=torch.float32)
+    print(f"x shape: {x.shape}")
+    print(f"x_mark shape: {x_mark.shape}")
+
+    model.eval()
+    with torch.amp.autocast('cuda'):
+        outputs = model(x, x_mark, None, None)
+        outputs = outputs[:, -args.token_len:, :]
+        result = outputs.squeeze(0)
+        df_res = pd.DataFrame(result.detach().cpu().numpy())
+        # 重命名df_res的列名为open,close,high,low,volume,amount
+        df_res.columns = ['open', 'close', 'high', 'low', 'volume', 'amount']
+        return df_res
+
+
+def get_model():
     args = Args()
     model = AutoTimes_Qwen.Model(args)
     if args.use_multi_gpu:
@@ -87,25 +113,7 @@ def predict(df_raw):
         model = model.to(device)
     best_model_path = "./checkpoints/best_model.pth"
     model.load_state_dict(torch.load(best_model_path), strict=False)
-
-    data = torch.from_numpy(data)
-    data = data.unsqueeze(0)
-    data_stamp = data_stamp[0:len(data_stamp):args.token_len]
-    data_stamp = data_stamp.unsqueeze(0)
-    # data_stamp = torch
-    x = data.to(device, dtype=torch.float32)
-    x_mark = data_stamp.to(device, dtype=torch.float32)
-
-    model.eval()
-    with torch.amp.autocast('cuda'):
-        outputs = model(x, x_mark, None, None)
-        outputs = outputs[:, -args.token_len:, :]
-        result = outputs.squeeze(0)
-        df_res = pd.DataFrame(result.detach().cpu().numpy())
-        return df_res
-
-
-
+    return model,args,device
 
 
 
@@ -198,19 +206,21 @@ def run(stock_code):
 
 
 if __name__ == '__main__':
-    file = r"D:\BaiduNetdiskDownload\stock\minute15\2022\SH.600000.csv"
-    df = pd.read_csv(file)
-    df = get_std_stock(df)
-    df = df.iloc[0:800]
-    predict(df)
+    model,args,device = get_model()
+
+    # file = r"D:\BaiduNetdiskDownload\stock\minute15\2022\SH.600000.csv"
+    # df = pd.read_csv(file)
+    # df = get_std_stock(df)
+    # df = df.iloc[0:800]
+    # predict(df,model,args,device)
 
 
-    # folder = r'D:\BaiduNetdiskDownload\stock\minute15'
-    # all_stocks = get_all_stocks(folder)
-    # # 随机调整all_stocks的顺序
-    # random.shuffle(all_stocks)
-    # for stock_code in all_stocks:
-    #     print(stock_code)
-    #     run(stock_code)
+    folder = r'D:\BaiduNetdiskDownload\stock\minute15'
+    all_stocks = get_all_stocks(folder)
+    # 随机调整all_stocks的顺序
+    random.shuffle(all_stocks)
+    for stock_code in all_stocks:
+        print(stock_code)
+        run(stock_code)
 
     

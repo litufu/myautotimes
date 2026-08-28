@@ -65,6 +65,8 @@ class Model(nn.Module):
         if self.mix:
             times_embeds = times_embeds / times_embeds.norm(dim=2, keepdim=True)
             x_mark_enc = x_mark_enc / x_mark_enc.norm(dim=2, keepdim=True)
+            print(f"times_embeds shape: {times_embeds.shape}")
+            print(f"x_mark_enc shape: {x_mark_enc.shape}")
             times_embeds = times_embeds + self.add_scale * x_mark_enc
 
         outputs = self.qwen.model(
